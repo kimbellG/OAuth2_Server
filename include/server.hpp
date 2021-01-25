@@ -19,7 +19,7 @@ public:
 	void start_accept();
 	
 	std::string get_password() const;
-	void handle_accept(const boost::system::error_code &e);
+	void handle_accept(session *new_session, const boost::system::error_code &e);
 };
 
 #endif //__SERVER_HPP__

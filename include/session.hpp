@@ -12,7 +12,8 @@ class session
 	ssl_sock __socket;
 	
 	static const int __szarr = 4096;
-	unsigned char __buf[__szarr];	
+	unsigned char __inbuf[__szarr];	
+	unsigned char __outbuf[__szarr];
 
 public:
 	session(boost::asio::io_context &io, boost::asio::ssl::context &ssl_io) :
@@ -30,7 +31,6 @@ public:
 	void handshake_handle(const boost::system::error_code &e);
 	void read_handle(const boost::system::error_code &e, std::size_t bytes_transferred);
 	void write_handle(const boost::system::error_code &e);
-
 };
 
 
