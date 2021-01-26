@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)	  #Указываем версию сmake
 project(ssl_server VERSION 1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall")
-add_executable("${PROJECT_NAME}.a" main.cpp src/server.cpp src/session.cpp)  #Указываем результат работы и все исходники
+add_executable("${PROJECT_NAME}.a" main.cpp src/server.cpp src/session.cpp src/parsing.cpp)  #Указываем результат работы и все исходники
 #add_subdirectory(asio_server asio_server/build) #Добавить подпроект со своим файлов "CMakeList.txt"
 #add_library(mylib STATIC test1.cpp test2.cpp test3.cpp) Генерирует библиотеку указаного вида из указанных исходников
 #target_link_libraries(asio_server boost_date_time pthread) #Линкую указанные библиотеки

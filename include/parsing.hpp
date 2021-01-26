@@ -3,7 +3,10 @@
 
 
 #include <string>
+#include <vector>
 #include <boost/asio.hpp>
+
+#define DEBUG_HEADER
 
 struct header
 {
@@ -20,9 +23,9 @@ class Parser
 		__path,
 		__version
 	} __value_element;
-	std::string __basic_elements;
+	std::string __basic_elements[__number_element];
 
-	header *__headers;
+	std::vector<header> __headers;
 	
 /*	void __start_processing();
 

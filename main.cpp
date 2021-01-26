@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 	}
 	catch (std::out_of_range&) 
 	{
-		std::cerr << start_mes::start_err_mes << "Port out of range" << std::endl;
+		std::cerr << start_mes::start_err_mes << "Out of range" << std::endl;
 		exit(1);
 	}
 	catch (std::exception &e)
