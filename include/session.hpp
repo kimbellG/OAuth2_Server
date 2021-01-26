@@ -12,8 +12,8 @@ class session
 	ssl_sock __socket;
 	
 	static const int __szarr = 4096;
-	unsigned char __inbuf[__szarr];	
-	unsigned char __outbuf[__szarr];
+	char __inbuf[__szarr];	
+	char __outbuf[__szarr];
 
 public:
 	session(boost::asio::io_context &io, boost::asio::ssl::context &ssl_io) :

@@ -4,6 +4,7 @@
 #include <boost/bind/bind.hpp>
 
 #include "../include/odebug.hpp"
+#include "../include/parsing.hpp"
 
 void session::start()
 {
@@ -41,12 +42,14 @@ void session::read_handle(const boost::system::error_code &e, std::size_t bytes_
 {
 	if (!e)
 	{
+		//Тут Происходить обработка запроса и формирование ответа.
 #ifdef DEBUG
 		std::cout << start_mes::debug_mes << "Read data: " << std::endl;
 		std::cout << '\t' << __inbuf << std::endl;
 		std::cout << start_mes::debug_mes << "Write data: " << std::endl;
 		std::cout << '\t' << __outbuf << std::endl;
 #endif //DEBUG	
+		Parser test(__inbuf);
 		boost::asio::async_write(__socket, boost::asio::buffer(__outbuf, bytes_transferred),
 				boost::bind(&session::write_handle, this,
 					boost::asio::placeholders::error));
