@@ -49,10 +49,19 @@ void session::read_handle(const boost::system::error_code &e, std::size_t bytes_
 		std::cout << start_mes::debug_mes << "Write data: " << std::endl;
 		std::cout << '\t' << __outbuf << std::endl;
 #endif //DEBUG	
-		Parser test(__inbuf);
-		boost::asio::async_write(__socket, boost::asio::buffer(__outbuf, bytes_transferred),
+		try
+		{
+			http::Parser test(__inbuf);
+			
+			boost::asio::async_write(__socket, boost::asio::buffer(__outbuf, bytes_transferred),
 				boost::bind(&session::write_handle, this,
 					boost::asio::placeholders::error));
+		}
+		catch (http::Parser::exeptions& e)
+		{
+			delete this;
+		}
+
 	} else
 	{
 		std::cerr << start_mes::start_err_mes << "Session fault. session::read_handle: " 
