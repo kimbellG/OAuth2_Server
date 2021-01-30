@@ -11,7 +11,7 @@ class session
 {
 	ssl_sock __socket;
 	
-	static const int __szarr = 8192;
+	static const int __szarr = 8196;
 	char __inbuf[__szarr];	
 	char __outbuf[__szarr];
 

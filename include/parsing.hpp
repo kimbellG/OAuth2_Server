@@ -31,28 +31,26 @@ namespace http
 		std::vector<header> __headers;
 		std::string __data;
 		
-		void  __start_processing(std::size_t &start_request); // Заполенние метода, пути и версии запроса
+		void  __start_processing(const std::string &input, std::size_t &start_request); // Заполенние метода, пути и версии запроса
 	
-		void __headers_processing(std::size_t &start_headers) ; //Заполнение секции заголовков
-		void __data__processing(std::size_t &start_data); //Заполнение секции данных
+		void __headers_processing(const std::string &input, std::size_t &start_headers) ; //Заполнение секции заголовков
+		void __data__processing(const std::string &input, std::size_t &start_data); //Заполнение секции данных
 	
 	public:
 		enum exeptions
 		{
-			invalid_message
+			invalid_message,
+			empty_header
 		};
 		
 		Parser(std::string input);
 	
-	/*	
 		std::string content_size();
 		std::string content_type();
 		std::string content_path();
-		boost::asio::ip::tcp::endpoint &dest();
-	
 		std::string version();
-		std::string answer();
-	*/
+		std::string method();
+	
 		~Parser();
 	};
 };
