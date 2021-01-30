@@ -6,7 +6,8 @@
 #include <vector>
 #include <boost/asio.hpp>
 
-#define DEBUG_HEADER
+//#define DEBUG_HEADER
+//#define DEBUG_TMP
 
 namespace http
 {
@@ -28,29 +29,34 @@ namespace http
 		};
 		
 		std::string __basic_elements[__value_element::__number_elements];
-		std::vector<header> __headers;
+		std::vector<header> __http_headers;
 		std::string __data;
+		std::vector<header> __not__http_headers;
 		
 		void  __start_processing(const std::string &input, std::size_t &start_request); // Заполенние метода, пути и версии запроса
 	
-		void __headers_processing(const std::string &input, std::size_t &start_headers) ; //Заполнение секции заголовков
+		void __http_headers_processing(const std::string &input, std::size_t &start_headers) ; //Заполнение секции заголовков
 		void __data__processing(const std::string &input, std::size_t &start_data); //Заполнение секции данных
+
+		void __nhttp_headers_proccesing();
 	
 	public:
 		enum exeptions
 		{
 			invalid_message,
-			empty_header
+			invalid_header_name
 		};
 		
 		Parser(std::string input);
 	
-		std::string content_size();
-		std::string content_type();
-		std::string content_path();
+		std::string path();
 		std::string version();
 		std::string method();
+		std::string data();
 	
+		std::string http_header(const std::string &name);
+		std::string not_http_header(const std::string &name);
+
 		~Parser();
 	};
 };

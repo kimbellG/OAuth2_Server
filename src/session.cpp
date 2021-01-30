@@ -53,28 +53,30 @@ void session::read_handle(const boost::system::error_code &e, std::size_t bytes_
 		{
 			http::Parser test(__inbuf);
 #ifdef DEBUG
-			std::cout << start_mes::debug_mes << "MESSAGE" << std::endl;
+			std::cout << start_mes::debug_mes << "\tMESSAGE" << std::endl;
 			std::cout << start_mes::debug_mes << "Method: " << test.method() << std::endl;
-			std::cout << start_mes::debug_mes << "PATH: " << test.content_path() << std::endl;
+			std::cout << start_mes::debug_mes << "PATH: " << test.path() << std::endl;
 			std::cout << start_mes::debug_mes << "Version: " << test.version() << std::endl;
 			try
 			{
-				std::cout << start_mes::debug_mes << "Content-Length: " << test.content_size() << std::endl;
+				std::cout << start_mes::debug_mes << "Content-Length: " 
+					<< test.http_header("Content-Length") << std::endl;
 			}
 			catch (http::Parser::exeptions &e)
 			{
-				if (e == http::Parser::exeptions::empty_header)
+				if (e == http::Parser::exeptions::invalid_header_name)
 				{
 					std::cout << "Not found" << std::endl;
 				}
 			}
 			try
 			{
-				std::cout << start_mes::debug_mes << "Content-Type: " << test.content_type() << std::endl;
+				std::cout << start_mes::debug_mes << "Content-Type: " 
+					<< test.http_header("Content-Type") << std::endl;
 			}
 			catch (http::Parser::exeptions &e)
 			{
-				if (e == http::Parser::exeptions::empty_header)
+				if (e == http::Parser::exeptions::invalid_header_name)
 				{
 					std::cout << "Not found" << std::endl;
 				}
@@ -92,7 +94,7 @@ void session::read_handle(const boost::system::error_code &e, std::size_t bytes_
 			{
 				delete this;
 			}
-			else if (e == http::Parser::exeptions::empty_header)
+			else if (e == http::Parser::exeptions::invalid_header_name)
 			{
 				std::cerr << start_mes::start_err_mes << "Header not found" << std::endl;
 			}

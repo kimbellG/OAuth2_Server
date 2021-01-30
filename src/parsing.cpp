@@ -13,9 +13,11 @@ namespace http
 
 		__start_processing(input, curr_pos); 
 
-		__headers_processing(input, curr_pos);
+		__http_headers_processing(input, curr_pos);
 
 		__data__processing(input, curr_pos);
+
+		__nhttp_headers_proccesing();
 	
 	}
 
@@ -47,7 +49,7 @@ namespace http
 
 	}
 
-	void Parser::__headers_processing(const std::string &input, std::size_t &start_headers)
+	void Parser::__http_headers_processing(const std::string &input, std::size_t &start_headers)
 	{
 		std::size_t end_word;	
 		std::string header_str;
@@ -56,7 +58,7 @@ namespace http
 	
 		if (end_word == std::string::npos)
 		{
-			std::cerr << start_mes::start_err_mes << "Parser::__headers_processing()."
+			std::cerr << start_mes::start_err_mes << "Parser::__http_headers_processing()."
 			   << "Not found: '\\n'" << std::endl;
 			throw invalid_message;
 		}
@@ -68,19 +70,19 @@ namespace http
 			end_word = input.find('\n', start_headers);
 			if (end_word == std::string::npos)
 			{
-				std::cerr << start_mes::start_err_mes << "Parser::__headers_processing()."
+				std::cerr << start_mes::start_err_mes << "Parser::__http_headers_processing()."
 				   << "Not found: '\\n'" << std::endl;
 				throw invalid_message;
 			}
 			
-	#ifdef DEBUG_HEADER
+	#ifdef DEBUG_TMP
 			std::cout << start_mes::debug_mes << header_str << std::endl;
 	#endif //DEBUG_HEADER
 	
 			std::size_t value_start = header_str.find(':');
 			if (value_start == std::string::npos)
 			{
-				std::cerr << start_mes::start_err_mes << "Parser::__headers_processing. "
+				std::cerr << start_mes::start_err_mes << "Parser::__http_headers_processing. "
 				   << "Not found: ':' in header's pars" << std::endl;
 				throw invalid_message;
 			}
@@ -88,14 +90,16 @@ namespace http
 			tmp.name = header_str.substr(0, value_start);
 			tmp.value = header_str.substr(value_start + 2, header_str.size() - value_start);
 	
-			__headers.push_back(tmp);
+			__http_headers.push_back(tmp);
 		}
 #ifdef DEBUG_HEADER
-		for (std::size_t i = 0; i < __headers.size(); i++)
+		std::cout << start_mes::debug_mes << "\tHTTP HEADERS" << std::endl;
+
+		for (std::size_t i = 0; i < __http_headers.size(); i++)
 		{
 			std::cout << start_mes::debug_mes 
-				<< "HEADER.\tName = " << __headers[i].name << std::setw(10) 
-				<< "\tValue = " << __headers[i].value << std::endl;
+				<< "Name = " << __http_headers[i].name << std::setw(10) 
+				<< "Value = " << __http_headers[i].value << std::endl;
 		}
 #endif //DEBUG_HEADER
 	}
@@ -107,35 +111,79 @@ namespace http
 		__data = input.substr(start_data, input.size() - start_data);
 
 #ifdef DEBUG_HEADER
-		std::cout << start_mes::debug_mes << "DATA.\t" << __data << std::endl;
+		std::cout << start_mes::debug_mes << "\tDATA" << std::endl
+		   	<<  start_mes::debug_mes << __data << std::endl;
 #endif //DEBUG_HEADER
 	}
 
-	std::string Parser::content_size()
+	void Parser::__nhttp_headers_proccesing()
 	{
-		for (std::size_t i = 0; i < __headers.size(); i++)
+		std::size_t start_headers;
+		std::string headers;
+
+		if (method() == "GET")
 		{
-			if (__headers[i].name == "Content-Length")
+			 start_headers = __basic_elements[__value_element::__path].find('?');
+			
+			if (start_headers == std::string::npos)
 			{
-				return __headers[i].value;
+				return;
 			}
+			
+			start_headers++;
+			headers = __basic_elements[__value_element::__path].substr(start_headers, __basic_elements[__value_element::__path].size() - start_headers);
+			__basic_elements[__value_element::__path].erase(start_headers);
 		}
-		throw empty_header;
+	   	else if (method() == "POST" && http_header("Content-Type") == "application/x-www-form-urlencoded\r")
+		{
+			headers = __data;
+#ifdef DEBUG_TMP
+			std::cout << start_mes::debug_mes  
+			   <<	"method - POST, content-type == application/x-www-form-urlencoded" << std::endl;
+#endif //DEBUG_HEADER
+
+		}
+
+		if (headers.empty())
+		{
+			return;
+		}
+			
+		start_headers = 0;
+		std::size_t end_headers;
+		header tmp;
+		do
+		{
+			end_headers = headers.find('&', start_headers);
+			std::size_t end_name = headers.find('=', start_headers);
+
+			tmp.name = headers.substr(start_headers, end_name - start_headers);
+			tmp.value = headers.substr(end_name + 1, end_headers - end_name - 1);
+			__not__http_headers.push_back(tmp);
+
+			start_headers = end_headers + 1;
+#ifdef DEBUG_TMP
+			std::cout << start_mes::debug_mes << "Name: " << tmp.name << std::endl;
+			std::cout << start_mes::debug_mes << "Value: " << tmp.value << std::endl;
+#endif //DEBUG_TMP
+
+		} while (end_headers != std::string::npos);
+#ifdef DEBUG_HEADER
+		std::cout << start_mes::debug_mes << "\tNON HTTP HEADERS" << std::endl;
+
+		std::vector<header>::iterator start = __not__http_headers.begin();	
+		while (start != __not__http_headers.end())
+		{
+			std::cout << start_mes::debug_mes << "Name: " << start->name << std::endl;
+			std::cout << start_mes::debug_mes << "Value: " << start->value << std::endl;
+			start++;
+		}
+#endif // DEBUG_HEADER
+		
+
 	}
 
-	std::string Parser::content_type()
-	{
-		for (std::size_t i = 0; i < __headers.size(); i++)
-		{
-			if (__headers[i].name == "Content-Type")
-			{
-				return __headers[i].value;
-			}
-		}
-		throw empty_header;
-	}
-
-	std::string Parser::content_path()
+	std::string Parser::path()
 	{
 		std::size_t end_path = __basic_elements[__value_element::__path].find('?');
 		if (end_path == std::string::npos)
@@ -171,6 +219,35 @@ namespace http
 			return __basic_elements[__value_element::__version];
 		}
 	}
+
+	std::string Parser::http_header(const std::string &name)
+	{
+		for (std::vector<header>::iterator start = __http_headers.begin();
+				start != __http_headers.end(); start++)
+		{
+			if (start->name == name)
+			{
+				return start->value;
+			}
+		}
+
+		throw invalid_header_name;
+	}
+
+	std::string Parser::not_http_header(const std::string &name)
+	{
+		for (std::vector<header>::iterator start = __not__http_headers.begin();
+				start != __not__http_headers.end(); start++)
+		{
+			if (start->name == name)
+			{
+				return start->value;
+			}
+		}
+
+		throw invalid_header_name;
+	}
+
 	
 	Parser::~Parser() 
 	{
