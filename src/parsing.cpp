@@ -9,7 +9,7 @@ namespace http
 {
 	Parser::Parser(std::string input)
 	{
-		std::size_t curr_pos = 0;
+		int curr_pos = 0;
 
 		__start_processing(input, curr_pos); 
 
@@ -21,7 +21,7 @@ namespace http
 	
 	}
 
-	void Parser::__start_processing(const std::string &input, std::size_t &start_request)
+	void Parser::__start_processing(const std::string &input, int &start_request)
 	{
 		size_t end_word;
 		for (int i = 0; i < __value_element::__number_elements; i++)
@@ -33,7 +33,9 @@ namespace http
 				std::cerr << start_mes::start_err_mes << "Parser::__start_processing()." 
 					<< "Invalid message from client."
 					<< "Not found - ' ', '\\r'" << std::endl;
-				throw invalid_message;
+				__basic_elements[i].clear();
+				start_request = -1;
+				return;
 			}
 
 			__basic_elements[i] = input.substr(start_request, end_word - start_request);
@@ -49,8 +51,15 @@ namespace http
 
 	}
 
-	void Parser::__http_headers_processing(const std::string &input, std::size_t &start_headers)
+	void Parser::__http_headers_processing(const std::string &input, int &start_headers)
 	{
+
+		if (start_headers == -1)
+		{
+			__http_headers.clear();
+			return;
+		}
+
 		std::size_t end_word;	
 		std::string header_str;
 		header tmp;
@@ -60,7 +69,9 @@ namespace http
 		{
 			std::cerr << start_mes::start_err_mes << "Parser::__http_headers_processing()."
 			   << "Not found: '\\n'" << std::endl;
-			throw invalid_message;
+			__http_headers.clear();
+			start_headers = -1;
+			return;
 		}
 	
 	
@@ -72,7 +83,9 @@ namespace http
 			{
 				std::cerr << start_mes::start_err_mes << "Parser::__http_headers_processing()."
 				   << "Not found: '\\n'" << std::endl;
-				throw invalid_message;
+				__http_headers.clear();
+				start_headers = -1;
+				return;
 			}
 			
 	#ifdef DEBUG_TMP
@@ -84,7 +97,9 @@ namespace http
 			{
 				std::cerr << start_mes::start_err_mes << "Parser::__http_headers_processing. "
 				   << "Not found: ':' in header's pars" << std::endl;
-				throw invalid_message;
+				__http_headers.clear();
+				start_headers = -1;
+				return;
 			}
 
 			tmp.name = header_str.substr(0, value_start);
@@ -104,8 +119,14 @@ namespace http
 #endif //DEBUG_HEADER
 	}
 
-	void Parser::__data__processing(const std::string &input, std::size_t &start_data)
+	void Parser::__data__processing(const std::string &input, int &start_data)
 	{
+		if (start_data == -1)
+		{
+			__data.clear();
+			return;
+		}
+
 		start_data += 2;
 
 		__data = input.substr(start_data, input.size() - start_data);
@@ -121,27 +142,34 @@ namespace http
 		std::size_t start_headers;
 		std::string headers;
 
-		if (method() == "GET")
+		try
 		{
-			 start_headers = __basic_elements[__value_element::__path].find('?');
-			
-			if (start_headers == std::string::npos)
+			if (method() == "GET")
 			{
-				return;
+				 start_headers = __basic_elements[__value_element::__path].find('?');
+				
+				if (start_headers == std::string::npos)
+				{
+					return;
+				}
+				
+				start_headers++;
+				headers = __basic_elements[__value_element::__path].substr(start_headers, __basic_elements[__value_element::__path].size() - start_headers);
+				__basic_elements[__value_element::__path].erase(start_headers);
 			}
-			
-			start_headers++;
-			headers = __basic_elements[__value_element::__path].substr(start_headers, __basic_elements[__value_element::__path].size() - start_headers);
-			__basic_elements[__value_element::__path].erase(start_headers);
+		   	else if (method() == "POST" && http_header("Content-Type") == "application/x-www-form-urlencoded\r")
+			{
+				headers = __data;
+	#ifdef DEBUG_TMP
+				std::cout << start_mes::debug_mes  
+				   <<	"method - POST, content-type == application/x-www-form-urlencoded" << std::endl;
+	#endif //DEBUG_HEADER
+	
+			}
 		}
-	   	else if (method() == "POST" && http_header("Content-Type") == "application/x-www-form-urlencoded\r")
+		catch (exeptions &e)
 		{
-			headers = __data;
-#ifdef DEBUG_TMP
-			std::cout << start_mes::debug_mes  
-			   <<	"method - POST, content-type == application/x-www-form-urlencoded" << std::endl;
-#endif //DEBUG_HEADER
-
+			return;
 		}
 
 		if (headers.empty())
@@ -185,6 +213,11 @@ namespace http
 
 	std::string Parser::path()
 	{
+		if (__basic_elements[__value_element::__path].empty())
+		{
+			throw invalid_message;
+		}
+
 		std::size_t end_path = __basic_elements[__value_element::__path].find('?');
 		if (end_path == std::string::npos)
 		{
@@ -222,6 +255,11 @@ namespace http
 
 	std::string Parser::http_header(const std::string &name)
 	{
+		if (__http_headers.empty())
+		{
+			throw invalid_message;
+		}
+
 		for (std::vector<header>::iterator start = __http_headers.begin();
 				start != __http_headers.end(); start++)
 		{
@@ -236,6 +274,11 @@ namespace http
 
 	std::string Parser::not_http_header(const std::string &name)
 	{
+		if (__not__http_headers.empty())
+		{
+			throw invalid_message;
+		}
+
 		for (std::vector<header>::iterator start = __not__http_headers.begin();
 				start != __not__http_headers.end(); start++)
 		{

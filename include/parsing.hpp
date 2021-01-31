@@ -33,10 +33,10 @@ namespace http
 		std::string __data;
 		std::vector<header> __not__http_headers;
 		
-		void  __start_processing(const std::string &input, std::size_t &start_request); // Заполенние метода, пути и версии запроса
+		void  __start_processing(const std::string &input, int &start_request); // Заполенние метода, пути и версии запроса
 	
-		void __http_headers_processing(const std::string &input, std::size_t &start_headers) ; //Заполнение секции заголовков
-		void __data__processing(const std::string &input, std::size_t &start_data); //Заполнение секции данных
+		void __http_headers_processing(const std::string &input, int &start_headers) ; //Заполнение секции заголовков
+		void __data__processing(const std::string &input, int &start_data); //Заполнение секции данных
 
 		void __nhttp_headers_proccesing();
 	
