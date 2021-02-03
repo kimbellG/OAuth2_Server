@@ -47,6 +47,27 @@ namespace http
 			invalid_header_name
 		};
 		
+		class invalid_message :
+			public std::logic_error
+		{
+		public:
+			invalid_message(std::string message)
+				: std::logic_error(message)
+			{
+			}
+		};
+
+		class invalid_header_name :
+			std::logic_error
+		{
+		public:
+			invalid_header_name(std::string message)
+				: std::logic_error(message)
+			{
+			}
+		};
+
+		
 		Parser(std::string input);
 	
 		std::string path();

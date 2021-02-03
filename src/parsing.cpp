@@ -35,7 +35,7 @@ namespace http
 					<< "Not found - ' ', '\\r'" << std::endl;
 				__basic_elements[i].clear();
 				start_request = -1;
-				return;
+				throw invalid_message;
 			}
 
 			__basic_elements[i] = input.substr(start_request, end_word - start_request);
@@ -57,7 +57,7 @@ namespace http
 		if (start_headers == -1)
 		{
 			__http_headers.clear();
-			return;
+			throw invalid_message;
 		}
 
 		std::size_t end_word;	
@@ -71,7 +71,7 @@ namespace http
 			   << "Not found: '\\n'" << std::endl;
 			__http_headers.clear();
 			start_headers = -1;
-			return;
+			throw invalid_message;
 		}
 	
 	
