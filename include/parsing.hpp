@@ -41,12 +41,6 @@ namespace http
 		void __nhttp_headers_proccesing();
 	
 	public:
-		enum exeptions
-		{
-			invalid_message,
-			invalid_header_name
-		};
-		
 		class invalid_message :
 			public std::logic_error
 		{
