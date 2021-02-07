@@ -13,16 +13,17 @@ namespace http
 {
 	class Answer
 	{
-		Parser request;
+		Parser __request;
 
 		const char* __server_name;
+		const std::string __root_path;
 
 		std::string __version;
 		std::string __data_filename;
 
 		std::vector<header> __http_headers;
 
-//		void __add_file_to_answer();
+		void __add_file_to_answer();
 		void __add_version();
 		void __add_http_header(std::string __name, std::string __value);
 
@@ -39,7 +40,7 @@ namespace http
 		} __code;
 
 	public:
-		Answer(char *input, const char *server_name = "FServ");
+		Answer(char *input, const std::string &root_path, const char *server_name = "FServ");
 
 //		std::string get_answer();
 	

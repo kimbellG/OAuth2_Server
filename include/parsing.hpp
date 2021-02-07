@@ -41,11 +41,26 @@ namespace http
 		void __nhttp_headers_proccesing();
 	
 	public:
-		enum exeptions
+		class invalid_message :
+			public std::logic_error
 		{
-			invalid_message,
-			invalid_header_name
+		public:
+			invalid_message(std::string message)
+				: std::logic_error(message)
+			{
+			}
 		};
+
+		class invalid_header_name :
+			std::logic_error
+		{
+		public:
+			invalid_header_name(std::string message)
+				: std::logic_error(message)
+			{
+			}
+		};
+
 		
 		Parser(std::string input);
 	

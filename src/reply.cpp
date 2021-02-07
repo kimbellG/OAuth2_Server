@@ -10,8 +10,9 @@
 
 namespace http
 {
-	Answer::Answer(char *input, const char *server_name) 
-		: request(input), __server_name(server_name), __code(OK)
+	Answer::Answer(char *input, const std::string &root_path, const char *server_name) 
+		try
+			: __request(input), __server_name(server_name), __root_path(root_path), __code(OK)
 	{
 		const int time_strlen = 34;
 		char time_str[time_strlen];
@@ -38,20 +39,15 @@ namespace http
 		}
 #endif // DEBUG_REPLY	
 	}
+	catch (Parser::invalid_message &e)
+	{
+		std::cerr << start_mes::debug_mes << "Invalid message" << std::endl;
+		throw;
+	}
 
 	void Answer::__add_version()
 	{
-		try
-		{
-			__version = request.version();
-		}
-		catch (Parser::exeptions &e)
-		{
-			if (e == Parser::exeptions::invalid_message)
-			{
-				__code = Bad_Request;
-			}
-		}
+		__version = __request.version();
 
 		if (__version != "HTTP/1.1")
 		{
@@ -69,4 +65,11 @@ namespace http
 	{
 		__http_headers.push_back({__name, __value});
 	}
+
+	void Answer::__add_file_to_answer()
+	{
+		std::string path = __request.path();
+		std::
+
+	
 }
