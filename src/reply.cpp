@@ -10,9 +10,9 @@
 
 namespace http
 {
-	Answer::Answer(char *input, const std::string &root_path, const char *server_name) 
+	Answer::Answer(char *input, const char *server_name) 
 		try
-			: __request(input), __server_name(server_name), __root_path(root_path), __code(OK)
+			: __request(input), __server_name(server_name), __code(OK)
 	{
 		const int time_strlen = 34;
 		char time_str[time_strlen];
@@ -27,7 +27,7 @@ namespace http
 		__add_version(); // Добавление версии
 		__add_http_header("Server", server_name); //Добавление первоначальных заголовков
 		__add_http_header("Date", time_str);
-		// __add_file_to_answer();
+		__add_file_to_answer();
 #ifdef DEBUG_REPLY
 		std::cout << start_mes::debug_mes << "\tHEADERS" << std::endl;
 
@@ -37,6 +37,8 @@ namespace http
 			std::cout << start_mes::debug_mes << "Name: " << start->name << std::endl;
 			std::cout << start_mes::debug_mes << "Value: " << start->value << std::endl;
 		}
+		
+		std::cout << start_mes::debug_mes << "Code: " << __code << std::endl;
 #endif // DEBUG_REPLY	
 	}
 	catch (Parser::invalid_message &e)
@@ -68,8 +70,39 @@ namespace http
 
 	void Answer::__add_file_to_answer()
 	{
-		std::string path = __request.path();
-		std::
+		std::string path = root_path + __request.path();
 
+		if (*(path.end() - 1) == '/')
+		{
+			path.append("index.html");
+		}
+
+		std::ifstream required_file(path);
+		std::string tmp;
+
+		if (required_file.is_open())
+		{
+			while (std::getline(required_file, tmp))
+			{
+				__data_file.push_back(tmp);
+			}
+		}
+		else
+		{
+			__code = Not_Found;
+		}
+
+#ifdef DEBUG_REPLY
+		std::cout << start_mes::debug_mes << "\t PATH" << std::endl;
+		std::cout << start_mes::debug_mes << "Path: " << path << std::endl;
+		
+		std::cout << start_mes::debug_mes << "\t FILE" << std::endl;
+		for (std::vector<std::string>::iterator ptr = __data_file.begin();
+				ptr != __data_file.end(); ptr++)
+		{
+			std::cout << start_mes::debug_mes << *ptr << std::endl;
+		}
+#endif
+	}
 	
 }

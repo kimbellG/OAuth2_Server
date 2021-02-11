@@ -6,15 +6,18 @@
 #include "include/server.hpp"
 #include "include/odebug.hpp"
 
+namespace http
+{
+	std::string root_path;
+}
 
 
 int main(int argc, char *argv[])
 {	
-	std::string address;
 	std::string port;
 
 	int ret;
-	while ((ret = ::getopt(argc, argv, "p:")) != -1)
+	while ((ret = ::getopt(argc, argv, "p:d:")) != -1)
 	{
 		switch (ret)
 		{
@@ -24,11 +27,25 @@ int main(int argc, char *argv[])
 				std::cout << "port: " << port << std::endl;
 #endif // DEBUG
 				break;
+			case 'd':
+				http::root_path = ::optarg;
+#ifdef DEBUG
+				std::cout << "root path: " << http::root_path << std::endl;
+#endif //DEBUG
+				break;
+
 			case '?':
-				std::cout << "Use server -p <port> " << std::endl;
+				std::cout << "Use server -p <port> -d <root_path> " << std::endl;
 				exit(1);
 		}
 	}
+
+	if (port.empty() || http::root_path.empty())
+	{
+		std::cerr << "Invalid argument. " << std::endl;
+		std::cerr << "Usage server -p <port> -d <root_path>" << std::endl;
+		exit(1);
+	}	
 
 	boost::asio::io_context io;
 
