@@ -104,5 +104,10 @@ namespace http
 		}
 #endif
 	}
+
+	std::string Answer::get_answer()
+	{
+	}
+
 	
 }

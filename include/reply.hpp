@@ -13,6 +13,7 @@ namespace http
 {
 
 	extern std::string root_path;
+	extern std::string config;
 
 	class Answer
 	{
@@ -44,9 +45,9 @@ namespace http
 	public:
 		Answer(char *input, const char *server_name = "FServ");
 
-//		std::string get_answer();
+		std::string get_answer();
 	
-//		~Answer();
+		~Answer();
 	};
 }
 

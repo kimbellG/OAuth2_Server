@@ -9,6 +9,7 @@
 namespace http
 {
 	std::string root_path;
+	std::string config;
 }
 
 
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
 	std::string port;
 
 	int ret;
-	while ((ret = ::getopt(argc, argv, "p:d:")) != -1)
+	while ((ret = ::getopt(argc, argv, "p:d:c:")) != -1)
 	{
 		switch (ret)
 		{
@@ -34,16 +35,22 @@ int main(int argc, char *argv[])
 #endif //DEBUG
 				break;
 
+			case 'c':
+				http::config = ::optarg;
+#ifdef DEBUG
+				std::cout << "config file: " << http::config << std::endl;
+#endif //DEBUG
+
 			case '?':
 				std::cout << "Use server -p <port> -d <root_path> " << std::endl;
 				exit(1);
 		}
 	}
 
-	if (port.empty() || http::root_path.empty())
+	if (port.empty() || http::root_path.empty() || http::config.empty())
 	{
 		std::cerr << "Invalid argument. " << std::endl;
-		std::cerr << "Usage server -p <port> -d <root_path>" << std::endl;
+		std::cerr << "Usage server -p <port> -d <root_path> -c <config file>" << std::endl;
 		exit(1);
 	}	
 
