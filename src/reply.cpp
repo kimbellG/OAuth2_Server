@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <memory>
 #include <string>
 #include <ctime>
 
@@ -71,6 +72,7 @@ namespace http
 	void Answer::__add_file_to_answer()
 	{
 		std::string path = root_path + __request.path();
+		std::string content_type;
 
 		if (*(path.end() - 1) == '/')
 		{
@@ -79,13 +81,18 @@ namespace http
 
 		std::ifstream required_file(path);
 		std::string tmp;
+		std::size_t content_len = 0;
+		
 
 		if (required_file.is_open())
 		{
+
 			while (std::getline(required_file, tmp))
 			{
+				content_len += tmp.size();
 				__data_file.push_back(tmp);
 			}
+			__add_http_header("Content-Length", std::to_string(content_len));
 		}
 		else
 		{
@@ -105,9 +112,11 @@ namespace http
 #endif
 	}
 
-	std::string Answer::get_answer()
+	std::unique_ptr<std::string> Answer::get_answer()
 	{
-	}
+		std::unique_ptr<std::string> answer = std::make_unique<std::string>();
 
+		return answer;
+	}
 	
 }

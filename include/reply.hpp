@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "parsing.hpp"
 
@@ -30,6 +31,29 @@ namespace http
 		void __add_version();
 		void __add_http_header(std::string __name, std::string __value);
 
+		std::string __get_content_type(std::string path)
+		{
+			const std::vector<std::string> http_type = {"html",	"text/html","js", "application/javascript",
+			   	"css", "text/css"};
+
+			std::string type = path.substr(path.find('.'));
+
+#ifdef DEBUG_REPLY
+			std::cout << "Type: " << type << std::endl;
+#endif // DEBUG_REPLY
+
+			for (std::vector<std::string>::const_iterator ptr = http_type.begin();
+					ptr != http_type.end(); ptr++)
+			{
+				if (type == *ptr)
+				{
+					return *(ptr + 1);
+				}
+			}
+			throw std::invalid_argument("Answer::content_type: Invalid_type");
+		}
+
+	public:
 		enum __status_code
 		{
 			OK = 200,
@@ -42,10 +66,9 @@ namespace http
 			HTTP_Version_Not_Supported = 505
 		} __code;
 
-	public:
 		Answer(char *input, const char *server_name = "FServ");
 
-		std::string get_answer();
+		std::unique_ptr<std::string> get_answer();
 	
 		~Answer();
 	};
