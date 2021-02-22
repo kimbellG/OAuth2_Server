@@ -15,19 +15,9 @@ namespace http
 		try
 			: __request(input)
 	{
-		const int time_strlen = 34;
-		char time_str[time_strlen];
-		std::time_t t_value = std::time(NULL);
-		std::tm *t_struct = std::localtime(&t_value); //Sun, 31 Jan 2021 15:55:34 GMT
-		std::strftime(time_str, time_strlen, "%a, %e %b %G %H:%M:%S GMT%Z", t_struct); 
-#ifdef DEBUG_REPLY
-		std::cout <<  start_mes::debug_mes << "Time: " << time_str << std::endl;
-#endif //DEBUG_REPLY
-
-
 		__add_version(); // Добавление версии
 		__add_http_header("Server", server_name); //Добавление первоначальных заголовков
-		__add_http_header("Date", time_str);
+		__add_http_header("Date", get_current_time());
 		__add_file_to_answer();
 #ifdef DEBUG_REPLY
 		std::cout << start_mes::debug_mes << "\tHEADERS" << std::endl;
@@ -39,7 +29,6 @@ namespace http
 			std::cout << start_mes::debug_mes << "Value: " << start->value << std::endl;
 		}
 		
-		std::cout << start_mes::debug_mes << "Code: " << __code << std::endl;
 #endif // DEBUG_REPLY	
 	}
 	catch (Parser::invalid_message &e)
@@ -117,6 +106,20 @@ namespace http
 		std::unique_ptr<std::string> answer = std::make_unique<std::string>();
 
 		return answer;
+	}
+
+	std::string Answer::get_current_time()
+	{
+		const int time_strlen = 34;
+		char time_str[time_strlen];
+		std::time_t t_value = std::time(NULL);
+		std::tm *t_struct = std::localtime(&t_value); //Sun, 31 Jan 2021 15:55:34 GMT
+		std::strftime(time_str, time_strlen, "%a, %e %b %G %H:%M:%S GMT%Z", t_struct); 
+#ifdef DEBUG_REPLY
+		std::cout <<  start_mes::debug_mes << "Time: " << time_str << std::endl;
+#endif //DEBUG_REPLY
+
+		return std::string(time_str);
 	}
 	
 }

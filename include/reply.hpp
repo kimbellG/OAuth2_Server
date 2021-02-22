@@ -58,6 +58,8 @@ namespace http
 	public:
 		Answer(char *input);
 
+		static std::string get_current_time();
+
 		std::unique_ptr<std::string> get_answer();
 	
 		~Answer();
