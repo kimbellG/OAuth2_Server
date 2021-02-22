@@ -11,9 +11,9 @@
 
 namespace http
 {
-	Answer::Answer(char *input, const char *server_name) 
+	Answer::Answer(char *input) 
 		try
-			: __request(input), __server_name(server_name), __code(OK)
+			: __request(input)
 	{
 		const int time_strlen = 34;
 		char time_str[time_strlen];

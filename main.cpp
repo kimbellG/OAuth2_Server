@@ -10,16 +10,19 @@ namespace http
 {
 	std::string root_path;
 	std::string config;
+	std::string server_name;
 }
 
 
 int main(int argc, char *argv[])
 {	
 	std::string port;
+	http::server_name = "FServ v. 1.0.0";
 
 	int ret;
-	while ((ret = ::getopt(argc, argv, "p:d:c:")) != -1)
+	while ((ret = ::getopt(argc, argv, "p:d:c:n:")) != -1)
 	{
+		
 		switch (ret)
 		{
 			case 'p':
@@ -40,6 +43,15 @@ int main(int argc, char *argv[])
 #ifdef DEBUG
 				std::cout << "config file: " << http::config << std::endl;
 #endif //DEBUG
+				break;
+
+			case 'n':
+				http::server_name = ::optarg;
+
+#ifdef DEBUG
+				std::cout << "server name: " << http::server_name << std::endl;
+#endif //DEBUG
+				break;
 
 			case '?':
 				std::cout << "Use server -p <port> -d <root_path> " << std::endl;
@@ -52,7 +64,7 @@ int main(int argc, char *argv[])
 		std::cerr << "Invalid argument. " << std::endl;
 		std::cerr << "Usage server -p <port> -d <root_path> -c <config file>" << std::endl;
 		exit(1);
-	}	
+	}	 
 
 	boost::asio::io_context io;
 
