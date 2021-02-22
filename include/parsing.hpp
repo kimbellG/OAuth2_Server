@@ -52,13 +52,23 @@ namespace http
 		};
 
 		class invalid_header_name :
-			std::logic_error
+			public std::logic_error
 		{
 		public:
 			invalid_header_name(std::string message)
 				: std::logic_error(message)
 			{
 			}
+		};
+
+		class invalid_method :
+			public std::logic_error
+		{
+			public:
+				invalid_method(const std::string &message)
+					: std::logic_error(message)
+				{
+				}
 		};
 
 		

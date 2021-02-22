@@ -130,29 +130,32 @@ namespace http
 		std::size_t start_headers;
 		std::string headers;
 
-			if (method() == "GET")
+		if (method() == "GET" || method() == "HEAD")
+		{
+			 start_headers = __basic_elements[__value_element::__path].find('?');
+			
+			if (start_headers == std::string::npos)
 			{
-				 start_headers = __basic_elements[__value_element::__path].find('?');
-				
-				if (start_headers == std::string::npos)
-				{
-					return;
-				}
-				
-				start_headers++;
-				headers = __basic_elements[__value_element::__path].substr(start_headers, __basic_elements[__value_element::__path].size() - start_headers);
-				__basic_elements[__value_element::__path].erase(start_headers);
+				return;
 			}
-		   	else if (method() == "POST" && http_header("Content-Type") == "application/x-www-form-urlencoded\r")
-			{
-				headers = __data;
-	#ifdef DEBUG_TMP
-				std::cout << start_mes::debug_mes  
-				   <<	"method - POST, content-type == application/x-www-form-urlencoded" << std::endl;
-	#endif //DEBUG_HEADER
-	
-			}
-		
+				
+			start_headers++;
+			headers = __basic_elements[__value_element::__path].substr(start_headers, __basic_elements[__value_element::__path].size() - start_headers);
+			__basic_elements[__value_element::__path].erase(start_headers);
+		}
+	  	else if (method() == "POST" && http_header("Content-Type") == "application/x-www-form-urlencoded\r")
+		{
+			headers = __data;
+#ifdef DEBUG_TMP
+			std::cout << start_mes::debug_mes  
+			   <<	"method - POST, content-type == application/x-www-form-urlencoded" << std::endl;
+#endif //DEBUG_HEADER
+
+		}
+		else
+		{
+			throw invalid_method("Invalid input method");
+		}	
 			
 		start_headers = 0;
 		std::size_t end_headers;

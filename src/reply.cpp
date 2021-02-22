@@ -13,12 +13,21 @@
 
 namespace http
 {
-	Answer::Answer(char *input) 
-		try
-			: __request(new Parser(input))
+	Answer::Answer(const std::string &version, const std::string &code, 
+		   const std::string &desrpt, const std::string &filename) 
+		: __local_path(filename)
 	{
-		__add_http_header("Server", server_name); //Добавление первоначальных заголовков
-		__add_http_header("Date", funcs::get_current_time());
+		__answer = std::make_shared<std::string>();
+
+		__answer->append(version);
+		__answer->push_back(' ');
+		__answer->append(code);
+		__answer->push_back(' ');
+		__answer->append(desrpt);
+		__answer->append("\r\n");
+
+		add_http_header("Server", server_name); //Добавление первоначальных заголовков
+		add_http_header("Date", funcs::get_current_time());
 
 
 #ifdef DEBUG_REPLY
@@ -33,33 +42,15 @@ namespace http
 		
 #endif // DEBUG_REPLY	
 	}
-	catch (Parser::invalid_message &e)
-	{
-		std::cerr << start_mes::debug_mes << "Invalid message" << std::endl;
-		throw error::BadRequest();
-	}
-	std::string Answer::__version()
-	{
-		if (__request->version() != "HTTP/1.1")
-		{
-			throw error::HTTPVersionNotSupported();
-		}
 
-#ifdef DEBUG_REPLY
-		std::cout << start_mes::debug_mes << "\tGET VERSION" << std::endl;
-		std::cout << start_mes::debug_mes << "Ver: " << __request->version() << std::endl;
-#endif //DEBUG_REPLY
-		return __request->version();
-	}
-
-	void Answer::__add_http_header(std::string __name, std::string __value)
+	void Answer::add_http_header(const std::string &__name, const std::string &__value)
 	{
 		__http_headers.push_back({__name, __value});
 	}
 
 	std::unique_ptr<std::vector<std::string>> Answer::__get_file_to_answer()
 	{
-		std::string path = root_path + __request->path();
+		std::string path = root_path + __local_path;
 		std::string content_type;
 
 		if (*(path.end() - 1) == '/')
@@ -82,7 +73,7 @@ namespace http
 			content_len += tmp.size();
 			__data_file->push_back(tmp);
 		}
-		__add_http_header("Content-Length", std::to_string(content_len));
+		add_http_header("Content-Length", std::to_string(content_len));
 
 #ifdef DEBUG_REPLY
 		std::cout << start_mes::debug_mes << "\t PATH" << std::endl;
@@ -99,11 +90,69 @@ namespace http
 		return __data_file;
 	}
 
-	std::unique_ptr<std::string> Answer::get_answer()
+	std::shared_ptr<std::string> Answer::get_answer()
 	{
-		std::unique_ptr<std::string> answer = std::make_unique<std::string>();
+		auto filedata =	__get_file_to_answer();
+		
+		for (std::vector<header>::iterator ptr = __http_headers.begin();
+				ptr != __http_headers.end(); ptr++)
+		{
+			__answer->append((*ptr).name);
+			__answer->append(": ");
+			__answer->append((*ptr).value);
+			__answer->append("\r\n");
+		}
+		__answer->append("\r\n");
 
-		return answer;
+		for (auto ptr = filedata->begin();
+				ptr != filedata->end(); ptr++)
+		{
+			__answer->append(*ptr);
+			
+		}
+
+		return __answer;
+	}
+
+	Success::Success(char *input)
+		try
+			: __request(input)
+	{
+		if (__request.version() != "HTTP/1.1")
+		{
+			throw error::HTTPVersionNotSupported();
+		}
+
+#ifdef DEBUG_REPLY
+		std::cout << start_mes::debug_mes << "Creating success message" << std::endl;
+#endif // DEBUG_REPLY
+	}
+	catch (Parser::invalid_message &e)
+	{
+#ifdef DEBUG_REPLY
+		std::cout << start_mes::debug_mes << e.what() << std::endl;
+#endif //DEBUG_REPLY
+		throw error::BadRequest();
+	}
+	catch (Parser::invalid_header_name &e)
+	{
+#ifdef DEBUG_REPLY
+		std::cout << start_mes::debug_mes << e.what() << std::endl;
+#endif //DEBUG_REPTY
+		throw error::BadRequest();
+	}
+	catch (Parser::invalid_method &e)
+	{
+#ifdef DEBUG_REPLY
+		std::cout << start_mes::debug_mes << e.what() << std::endl;
+#endif //DEBUG_REPLY
+		throw error::HTTPVersionNotSupported();
+	}
+
+	std::shared_ptr<std::string> Success::get_answer()
+	{
+		Answer ans(__request.version(), "200", "OK", __request.path());
+		return ans.get_answer();
 	}
 
 	namespace funcs

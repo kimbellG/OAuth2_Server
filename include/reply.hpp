@@ -21,20 +21,35 @@ namespace http
 
 	class Answer
 	{
-		std::unique_ptr<Parser> __request;
-
+		std::shared_ptr<std::string> __answer;
 		std::vector<header> __http_headers;
-
-		std::string __version();
-		void __add_http_header(std::string __name, std::string __value);
+		std::string __local_path;
+		
 		std::unique_ptr<std::vector<std::string>> __get_file_to_answer();
+	public:
+		Answer(const std::string &version, const std::string &code, const std::string &desrpt,
+			   const std::string &filename);
+
+		void add_http_header(const std::string &__name, const std::string &__value);
+		std::shared_ptr<std::string> get_answer();
+	
+		~Answer()
+		{
+		}
+	};
+
+	class Success
+	{
+		Parser __request;
 
 	public:
-		Answer(char *input);
+		Success(char *input);
 
-		std::unique_ptr<std::string> get_answer();
-	
-		~Answer();
+		std::shared_ptr<std::string> get_answer();
+		
+		~Success()
+		{
+		}
 	};
 }
 
