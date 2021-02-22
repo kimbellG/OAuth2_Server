@@ -6,6 +6,7 @@
 #include <memory>
 
 #include "parsing.hpp"
+#include"reply.hpp"
 
 namespace http
 {
@@ -13,18 +14,13 @@ namespace http
 	{
 		class Error
 		{
-			std::string __code;
-			std::string __err_message;
-			std::shared_ptr<std::vector<header>> __http_headers;
-			std::string __filename;
+			Answer __answer;
 
 		public:
 			Error(const std::string& code, const std::string &err_message, const std::string& filename);
 
-			void add_header(const std::string &name, const std::string &value);	
+			std::unique_ptr<std::string> get_answer() const;
 			
-			virtual std::unique_ptr<std::string> get_answer() const;
-
 			virtual ~Error() = 0;
 		};
 
@@ -32,9 +28,6 @@ namespace http
 		{
 		public:
 			BadRequest();
-
-			std::unique_ptr<std::string> get_answer() const;
-
 			~BadRequest();
 		};
 
@@ -42,9 +35,6 @@ namespace http
 		{
 		public:
 			Forbidden();
-
-			std::unique_ptr<std::string> get_answer() const;
-
 			~Forbidden();
 		};
 
@@ -52,9 +42,6 @@ namespace http
 		{
 		public:
 			NotFound();
-
-			std::unique_ptr<std::string> get_answer() const;
-
 			~NotFound();
 		};
 
@@ -62,9 +49,6 @@ namespace http
 		{
 		public:
 			MethodNotAllowed();
-
-			std::unique_ptr<std::string> get_answer() const;
-
 			~MethodNotAllowed();
 		};
 
@@ -72,9 +56,6 @@ namespace http
 		{
 		public:
 			LengthRequired();
-
-			std::unique_ptr<std::string> get_answer() const;
-
 			~LengthRequired();
 		};
 
@@ -82,9 +63,6 @@ namespace http
 		{
 		public:
 			NotImplemented();
-
-			std::unique_ptr<std::string> get_answer() const;
-
 			~NotImplemented();
 		};
 
@@ -92,9 +70,6 @@ namespace http
 		{
 		public:
 			HTTPVersionNotSupported();
-
-			std::unique_ptr<std::string> get_answer() const;
-
 			~HTTPVersionNotSupported();
 		};
 
