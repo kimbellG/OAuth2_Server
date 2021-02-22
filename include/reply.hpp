@@ -7,6 +7,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <memory>
 
 #include "parsing.hpp"
 #include "errors.hpp"
@@ -20,45 +21,16 @@ namespace http
 
 	class Answer
 	{
-		Parser __request;
-
-		std::string __version;
-		std::vector<std::string> __data_file;
+		std::unique_ptr<Parser> __request;
 
 		std::vector<header> __http_headers;
 
-		error::Error *__error;
-
-		void __add_file_to_answer();
-		void __add_version();
+		std::string __version();
 		void __add_http_header(std::string __name, std::string __value);
-
-		std::string __get_content_type(std::string path)
-		{
-			const std::vector<std::string> http_type = {"html",	"text/html","js", "application/javascript",
-			   	"css", "text/css"};
-
-			std::string type = path.substr(path.find('.'));
-
-#ifdef DEBUG_REPLY
-			std::cout << "Type: " << type << std::endl;
-#endif // DEBUG_REPLY
-
-			for (std::vector<std::string>::const_iterator ptr = http_type.begin();
-					ptr != http_type.end(); ptr++)
-			{
-				if (type == *ptr)
-				{
-					return *(ptr + 1);
-				}
-			}
-			throw std::invalid_argument("Answer::content_type: Invalid_type");
-		}
+		std::unique_ptr<std::vector<std::string>> __get_file_to_answer();
 
 	public:
 		Answer(char *input);
-
-		static std::string get_current_time();
 
 		std::unique_ptr<std::string> get_answer();
 	
