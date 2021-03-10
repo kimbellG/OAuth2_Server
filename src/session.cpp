@@ -4,7 +4,7 @@
 #include <boost/bind/bind.hpp>
 
 #include "../include/odebug.hpp"
-#include "../include/parsing.hpp"
+#include "../include/reply.hpp"
 
 void session::start()
 {
@@ -46,60 +46,14 @@ void session::read_handle(const boost::system::error_code &e, std::size_t bytes_
 #ifdef DEBUG
 		std::cout << start_mes::debug_mes << "Read data: " << std::endl;
 		std::cout << '\t' << __inbuf << std::endl;
-		std::cout << start_mes::debug_mes << "Write data: " << std::endl;
-		std::cout << '\t' << __outbuf << std::endl;
+		// std::cout << start_mes::debug_mes << "Write data: " << std::endl;
+		// std::cout << '\t' << __outbuf << std::endl;
 #endif //DEBUG	
-		try
-		{
-			http::Parser test(__inbuf);
-#ifdef DEBUG
-			std::cout << start_mes::debug_mes << "\tMESSAGE" << std::endl;
-			std::cout << start_mes::debug_mes << "Method: " << test.method() << std::endl;
-			std::cout << start_mes::debug_mes << "PATH: " << test.path() << std::endl;
-			std::cout << start_mes::debug_mes << "Version: " << test.version() << std::endl;
-			try
-			{
-				std::cout << start_mes::debug_mes << "Content-Length: " 
-					<< test.http_header("Content-Length") << std::endl;
-			}
-			catch (http::Parser::exeptions &e)
-			{
-				if (e == http::Parser::exeptions::invalid_header_name)
-				{
-					std::cout << "Not found" << std::endl;
-				}
-			}
-			try
-			{
-				std::cout << start_mes::debug_mes << "Content-Type: " 
-					<< test.http_header("Content-Type") << std::endl;
-			}
-			catch (http::Parser::exeptions &e)
-			{
-				if (e == http::Parser::exeptions::invalid_header_name)
-				{
-					std::cout << "Not found" << std::endl;
-				}
-			}
-
-#endif //DEBUG
+		http::Answer test(__inbuf);
 			
-			boost::asio::async_write(__socket, boost::asio::buffer(__outbuf, bytes_transferred),
-				boost::bind(&session::write_handle, this,
-					boost::asio::placeholders::error));
-		}
-		catch (http::Parser::exeptions& e)
-		{
-			if (e == http::Parser::exeptions::invalid_message)
-			{
-				delete this;
-			}
-			else if (e == http::Parser::exeptions::invalid_header_name)
-			{
-				std::cerr << start_mes::start_err_mes << "Header not found" << std::endl;
-			}
-		}
-
+		boost::asio::async_write(__socket, boost::asio::buffer(__outbuf, bytes_transferred),
+			boost::bind(&session::write_handle, this,
+				boost::asio::placeholders::error));
 	} else
 	{
 		std::cerr << start_mes::start_err_mes << "Session fault. session::read_handle: " 

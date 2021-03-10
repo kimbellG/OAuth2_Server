@@ -28,9 +28,6 @@ std::string Server::get_password() const
 
 void Server::start_accept()
 {
-#ifdef DEBUG
-	std::cout << start_mes::debug_mes << "New connection." << std::endl;
-#endif //DEBUG
 	session *new_ses = new session(__io, __ssl_context);
 	__acceptor.async_accept(new_ses->socket(),
 			boost::bind(&Server::handle_accept, this, new_ses,

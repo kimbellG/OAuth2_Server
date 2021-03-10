@@ -9,7 +9,7 @@ namespace http
 {
 	Parser::Parser(std::string input)
 	{
-		std::size_t curr_pos = 0;
+		int curr_pos = 0;
 
 		__start_processing(input, curr_pos); 
 
@@ -21,7 +21,7 @@ namespace http
 	
 	}
 
-	void Parser::__start_processing(const std::string &input, std::size_t &start_request)
+	void Parser::__start_processing(const std::string &input, int &start_request)
 	{
 		size_t end_word;
 		for (int i = 0; i < __value_element::__number_elements; i++)
@@ -33,7 +33,9 @@ namespace http
 				std::cerr << start_mes::start_err_mes << "Parser::__start_processing()." 
 					<< "Invalid message from client."
 					<< "Not found - ' ', '\\r'" << std::endl;
-				throw invalid_message;
+				__basic_elements[i].clear();
+				start_request = -1;
+				throw invalid_message("Incorrect first str");
 			}
 
 			__basic_elements[i] = input.substr(start_request, end_word - start_request);
@@ -49,8 +51,9 @@ namespace http
 
 	}
 
-	void Parser::__http_headers_processing(const std::string &input, std::size_t &start_headers)
+	void Parser::__http_headers_processing(const std::string &input, int &start_headers)
 	{
+
 		std::size_t end_word;	
 		std::string header_str;
 		header tmp;
@@ -60,7 +63,9 @@ namespace http
 		{
 			std::cerr << start_mes::start_err_mes << "Parser::__http_headers_processing()."
 			   << "Not found: '\\n'" << std::endl;
-			throw invalid_message;
+			__http_headers.clear();
+			start_headers = -1;
+			throw invalid_message("Not found \\n"); 
 		}
 	
 	
@@ -72,7 +77,8 @@ namespace http
 			{
 				std::cerr << start_mes::start_err_mes << "Parser::__http_headers_processing()."
 				   << "Not found: '\\n'" << std::endl;
-				throw invalid_message;
+				__http_headers.clear();
+				throw invalid_message("Invalid end of string");
 			}
 			
 	#ifdef DEBUG_TMP
@@ -84,7 +90,9 @@ namespace http
 			{
 				std::cerr << start_mes::start_err_mes << "Parser::__http_headers_processing. "
 				   << "Not found: ':' in header's pars" << std::endl;
-				throw invalid_message;
+				__http_headers.clear();
+				start_headers = -1;
+				throw invalid_message("Invalid structure of headers");
 			}
 
 			tmp.name = header_str.substr(0, value_start);
@@ -104,8 +112,9 @@ namespace http
 #endif //DEBUG_HEADER
 	}
 
-	void Parser::__data__processing(const std::string &input, std::size_t &start_data)
+	void Parser::__data__processing(const std::string &input, int &start_data)
 	{
+
 		start_data += 2;
 
 		__data = input.substr(start_data, input.size() - start_data);
@@ -121,7 +130,7 @@ namespace http
 		std::size_t start_headers;
 		std::string headers;
 
-		if (method() == "GET")
+		if (method() == "GET" || method() == "HEAD")
 		{
 			 start_headers = __basic_elements[__value_element::__path].find('?');
 			
@@ -129,12 +138,12 @@ namespace http
 			{
 				return;
 			}
-			
+				
 			start_headers++;
 			headers = __basic_elements[__value_element::__path].substr(start_headers, __basic_elements[__value_element::__path].size() - start_headers);
 			__basic_elements[__value_element::__path].erase(start_headers);
 		}
-	   	else if (method() == "POST" && http_header("Content-Type") == "application/x-www-form-urlencoded\r")
+	  	else if (method() == "POST" && http_header("Content-Type") == "application/x-www-form-urlencoded\r")
 		{
 			headers = __data;
 #ifdef DEBUG_TMP
@@ -143,11 +152,10 @@ namespace http
 #endif //DEBUG_HEADER
 
 		}
-
-		if (headers.empty())
+		else
 		{
-			return;
-		}
+			throw invalid_method("Invalid input method");
+		}	
 			
 		start_headers = 0;
 		std::size_t end_headers;
@@ -198,26 +206,12 @@ namespace http
 
 	std::string Parser::method()
 	{
-		if (__basic_elements[__value_element::__method].empty())
-		{
-			throw invalid_message;
-		}
-		else
-		{
 			return __basic_elements[__value_element::__method];
-		}
 	}
 
 	std::string Parser::version()
 	{
-		if (__basic_elements[__value_element::__version].empty())
-		{
-			throw invalid_message;
-		}
-		else
-		{
 			return __basic_elements[__value_element::__version];
-		}
 	}
 
 	std::string Parser::http_header(const std::string &name)
@@ -231,7 +225,7 @@ namespace http
 			}
 		}
 
-		throw invalid_header_name;
+		throw invalid_header_name(name);
 	}
 
 	std::string Parser::not_http_header(const std::string &name)
@@ -245,7 +239,7 @@ namespace http
 			}
 		}
 
-		throw invalid_header_name;
+		throw invalid_header_name(name);
 	}
 
 	

@@ -33,19 +33,44 @@ namespace http
 		std::string __data;
 		std::vector<header> __not__http_headers;
 		
-		void  __start_processing(const std::string &input, std::size_t &start_request); // Заполенние метода, пути и версии запроса
+		void  __start_processing(const std::string &input, int &start_request); // Заполенние метода, пути и версии запроса
 	
-		void __http_headers_processing(const std::string &input, std::size_t &start_headers) ; //Заполнение секции заголовков
-		void __data__processing(const std::string &input, std::size_t &start_data); //Заполнение секции данных
+		void __http_headers_processing(const std::string &input, int &start_headers) ; //Заполнение секции заголовков
+		void __data__processing(const std::string &input, int &start_data); //Заполнение секции данных
 
 		void __nhttp_headers_proccesing();
 	
 	public:
-		enum exeptions
+		class invalid_message :
+			public std::logic_error
 		{
-			invalid_message,
-			invalid_header_name
+		public:
+			invalid_message(std::string message)
+				: std::logic_error(message)
+			{
+			}
 		};
+
+		class invalid_header_name :
+			public std::logic_error
+		{
+		public:
+			invalid_header_name(std::string message)
+				: std::logic_error(message)
+			{
+			}
+		};
+
+		class invalid_method :
+			public std::logic_error
+		{
+			public:
+				invalid_method(const std::string &message)
+					: std::logic_error(message)
+				{
+				}
+		};
+
 		
 		Parser(std::string input);
 	
